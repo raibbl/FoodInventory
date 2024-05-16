@@ -43,8 +43,8 @@
         tools:layout="@layout/fragment_add_manually" />
 
     <fragment
-        android:id="@+id/barcodeScannerFragment"
-        android:name="com.example.fooditeminventory.ui.BarcodeScannerFragment"
+    android:id="@+id/barcodeScannerFragment"
+        android:name="com.example.fooditeminventory.BarcodeScannerFragment"
         android:label="Barcode Scanner"
         tools:layout="@layout/fragment_barcode_scanner" />
 

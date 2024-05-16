@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_add_manually"
+        android:title="Add Manually" />
+    <item
+        android:id="@+id/menu_use_barcode_scanner"
+        android:title="Use Barcode Scanner" />
+</menu>

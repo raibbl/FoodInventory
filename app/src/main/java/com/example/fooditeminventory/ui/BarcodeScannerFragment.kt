@@ -170,10 +170,17 @@ class BarcodeScannerFragment : Fragment() {
     }
 
     private fun fetchProductInfo(barcode: String) {
+        _binding?.apply {
+            progressBar.visibility = View.VISIBLE
+        }
+
         val call = RetrofitInstance.api.getProduct(barcode)
         call.enqueue(object : Callback<ProductResponse> {
             @SuppressLint("SetTextI18n")
             override fun onResponse(call: Call<ProductResponse>, response: Response<ProductResponse>) {
+                _binding?.apply {
+                    progressBar.visibility = View.GONE
+                }
                 if (response.isSuccessful) {
                     val product = response.body()?.product
                     product?.let {
@@ -181,8 +188,22 @@ class BarcodeScannerFragment : Fragment() {
                         scannedProduct = it
                         println("Product: ${it.product_name}\nBrand: ${it.brands}\nIngredients: ${it.ingredients_text}")
                         _binding?.apply {
-                            statusTextView.text = "Product: ${it.product_name}\nBrand: ${it.brands}\nIngredients: ${it.ingredients_text}"
-                            navigateButton.text = "Add"
+                            scannedProduct = it
+                            // Extract product information from scannedProduct (if available)
+                            val productName = scannedProduct?.product_name ?: ""
+                            val productBrand = scannedProduct?.brands ?: ""
+                            val productIngredients = scannedProduct?.ingredients_text ?: ""
+                            val image_url = scannedProduct?.image_url?:""
+
+                            // Create the navigation action with arguments
+                            val action = BarcodeScannerFragmentDirections.actionBarcodeScannerFragmentToAddProductFragment(
+                                productName = productName,
+                                productBrand = productBrand,
+                                productIngredients = productIngredients,
+                                productImageUrl = image_url
+                            )
+
+                            findNavController().navigate(action)
                         }
                     }
                 } else {
@@ -190,7 +211,7 @@ class BarcodeScannerFragment : Fragment() {
                     println(response)
                     _binding?.apply {
                         statusTextView.text = "Product not found"
-                        navigateButton.text = "Add Manually"
+                        progressBar.visibility = View.GONE
                     }
                 }
             }
@@ -199,7 +220,6 @@ class BarcodeScannerFragment : Fragment() {
                 Toast.makeText(requireContext(), "Failed to fetch product info", Toast.LENGTH_LONG).show()
                 _binding?.apply {
                     statusTextView.text = "Failed to fetch product info"
-                    navigateButton.text = "Add Manually"
                 }
             }
         })

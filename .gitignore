@@ -3,3 +3,7 @@
 /.idea
 /.gradle/8.2
 /.gradle/8.2/checksums
+.gradle/8.2/executionHistory/executionHistory.lock
+*.lock
+/.gradle
+*.lock

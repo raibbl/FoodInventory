@@ -2,9 +2,11 @@ package com.example.fooditeminventory.ui.home
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -29,8 +31,8 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.addItemOptionsFragment)
+        binding.fab.setOnClickListener { view ->
+            showPopupMenu(view)
         }
 
         val textView: TextView = binding.textHome
@@ -40,6 +42,25 @@ class HomeFragment : Fragment() {
         return root
     }
 
+    private fun showPopupMenu(view: View) {
+        val popupMenu = PopupMenu(requireContext(), view)
+        val inflater: MenuInflater = popupMenu.menuInflater
+        inflater.inflate(R.menu.menu_fab, popupMenu.menu)
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.menu_add_manually -> {
+                    findNavController().navigate(R.id.addProductFragment)
+                    true
+                }
+                R.id.menu_use_barcode_scanner -> {
+                    findNavController().navigate(R.id.barcodeScannerFragment)
+                    true
+                }
+                else -> false
+            }
+        }
+        popupMenu.show()
+    }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

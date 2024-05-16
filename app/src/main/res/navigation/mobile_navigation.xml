@@ -27,25 +27,46 @@
         android:id="@+id/addItemOptionsFragment"
         android:name="com.example.fooditeminventory.AddItemOptionsFragment"
         android:label="Add Item Options"
-        tools:layout="@layout/fragment_add_item_options" >
+        tools:layout="@layout/fragment_add_item_options">
         <action
             android:id="@+id/action_addItemOptionsFragment_to_addManuallyFragment"
-            app:destination="@id/addManuallyFragment" />
+            app:destination="@id/addProductFragment" />
         <action
             android:id="@+id/action_addItemOptionsFragment_to_barcodeScannerFragment"
             app:destination="@id/barcodeScannerFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/addManuallyFragment"
-        android:name="com.example.fooditeminventory.ui.AddManuallyFragment"
+        android:id="@+id/addProductFragment"
+        android:name="com.example.fooditeminventory.ui.AddProductFragment"
         android:label="Add Manually"
-        tools:layout="@layout/fragment_add_manually" />
+        tools:layout="@layout/fragment_add_product">
+        <argument
+            android:name="productName"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="productBrand"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="productIngredients"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="productImageUrl"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
 
     <fragment
-    android:id="@+id/barcodeScannerFragment"
-        android:name="com.example.fooditeminventory.BarcodeScannerFragment"
+        android:id="@+id/barcodeScannerFragment"
+        android:name="com.example.fooditeminventory.ui.BarcodeScannerFragment"
         android:label="Barcode Scanner"
-        tools:layout="@layout/fragment_barcode_scanner" />
+        tools:layout="@layout/fragment_barcode_scanner">
+        <action
+            android:id="@+id/action_barcodeScannerFragment_to_addProductFragment"
+            app:destination="@id/addProductFragment" />
+    </fragment>
 
 </navigation>

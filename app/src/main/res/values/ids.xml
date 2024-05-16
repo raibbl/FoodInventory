@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="productInfo" type="id" />
+    <item name="action_barcodeScannerFragment_to_addProductFragment" type="id" />
+    <item name="addProductFragment" type="id" />
+    <item name="productIngredientsLabel" type="id" />
+</resources>

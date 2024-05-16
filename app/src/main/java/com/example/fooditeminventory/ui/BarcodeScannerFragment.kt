@@ -1,6 +1,7 @@
-package com.example.fooditeminventory
+package com.example.fooditeminventory.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +15,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import com.example.fooditeminventory.api.Product
 import com.example.fooditeminventory.databinding.FragmentBarcodeScannerBinding
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -22,13 +25,22 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import com.example.fooditeminventory.api.RetrofitInstance
+import com.example.fooditeminventory.api.ProductResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class BarcodeScannerFragment : Fragment() {
 
     private var _binding: FragmentBarcodeScannerBinding? = null
+
     private val binding get() = _binding!!
 
     private lateinit var cameraExecutor: ExecutorService
+
+    private var scannedProduct: Product? = null // Class variable to store product information
+
 
     companion object {
         private const val CAMERA_PERMISSION_REQUEST_CODE = 1001
@@ -52,8 +64,30 @@ class BarcodeScannerFragment : Fragment() {
             startCamera()
         } else {
             ActivityCompat.requestPermissions(requireActivity(),
-                arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_REQUEST_CODE)
+                arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_REQUEST_CODE
+            )
         }
+        binding.navigateButton.setOnClickListener {
+            // Extract product information from scannedProduct (if available)
+            val productName = scannedProduct?.product_name ?: ""
+            val productBrand = scannedProduct?.brands ?: ""
+            val productIngredients = scannedProduct?.ingredients_text ?: ""
+            val image_url = scannedProduct?.image_url?:""
+
+            // Create the navigation action with arguments
+            val action = BarcodeScannerFragmentDirections.actionBarcodeScannerFragmentToAddProductFragment(
+                productName = productName,
+                productBrand = productBrand,
+                productIngredients = productIngredients,
+                productImageUrl = image_url
+            )
+
+            findNavController().navigate(action)
+        }
+
+
+
+
     }
 
     private fun startCamera() {
@@ -111,8 +145,12 @@ class BarcodeScannerFragment : Fragment() {
 
     private fun handleBarcode(barcode: Barcode) {
         // Handle the scanned barcode
-        binding.bottomText.text = getString(R.string.barcode_value, barcode.rawValue)
-        println(barcode.rawValue)
+        val barcodeValue =barcode.rawValue
+//        binding.bottomText.text = getString(R.string.barcode_value, barcodeValue)
+        if (barcodeValue != null) {
+            println(barcodeValue)
+            fetchProductInfo(barcodeValue)
+        }
     }
 
     override fun onDestroyView() {
@@ -130,4 +168,41 @@ class BarcodeScannerFragment : Fragment() {
             Toast.makeText(requireContext(), "Camera permission is required to use this feature", Toast.LENGTH_LONG).show()
         }
     }
+
+    private fun fetchProductInfo(barcode: String) {
+        val call = RetrofitInstance.api.getProduct(barcode)
+        call.enqueue(object : Callback<ProductResponse> {
+            @SuppressLint("SetTextI18n")
+            override fun onResponse(call: Call<ProductResponse>, response: Response<ProductResponse>) {
+                if (response.isSuccessful) {
+                    val product = response.body()?.product
+                    product?.let {
+                        // Update UI with product information
+                        scannedProduct = it
+                        println("Product: ${it.product_name}\nBrand: ${it.brands}\nIngredients: ${it.ingredients_text}")
+                        _binding?.apply {
+                            statusTextView.text = "Product: ${it.product_name}\nBrand: ${it.brands}\nIngredients: ${it.ingredients_text}"
+                            navigateButton.text = "Add"
+                        }
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Product not found", Toast.LENGTH_LONG).show()
+                    println(response)
+                    _binding?.apply {
+                        statusTextView.text = "Product not found"
+                        navigateButton.text = "Add Manually"
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ProductResponse>, t: Throwable) {
+                Toast.makeText(requireContext(), "Failed to fetch product info", Toast.LENGTH_LONG).show()
+                _binding?.apply {
+                    statusTextView.text = "Failed to fetch product info"
+                    navigateButton.text = "Add Manually"
+                }
+            }
+        })
+    }
+
 }

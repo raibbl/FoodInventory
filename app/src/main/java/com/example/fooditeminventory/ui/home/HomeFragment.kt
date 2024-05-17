@@ -14,9 +14,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
@@ -70,45 +72,33 @@ fun HomeScreen(navController: NavController) {
     }
 
     Scaffold(
-        floatingActionButton = {
-            Box {
-                var anchorView: View? = null
-                AndroidView(
-                    factory = { context ->
-                        View(context).apply {
-                            anchorView = this
-                        }
-                    },
-                    modifier = Modifier.matchParentSize()
-                )
-                FloatingActionButton(
-                    onClick = {
-                        anchorView?.let {
-                            showPopupMenu(context, it, navController)
-                        }
-                    },
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .align(Alignment.BottomEnd)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
-            }
-        },
-        floatingActionButtonPosition = FabPosition.End,
         content = { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
             ) {
-                ProductList(products = products.value)
-                MealSuggestionSection(
-                    mealType = mealType.value,
-                    suggestions = suggestions.value,
-                    onMealTypeChange = { mealType.value = it }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    fetchMealSuggestions(products.value, mealType.value, suggestions)
+                    ProductList(products = products.value)
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    MealSuggestionSection(
+                        mealType = mealType.value,
+                        suggestions = suggestions.value,
+                        onMealTypeChange = { mealType.value = it }
+                    ) {
+                        fetchMealSuggestions(products.value, mealType.value, suggestions)
+                    }
                 }
             }
         }
@@ -143,18 +133,49 @@ fun MealSuggestionSection(
     onMealTypeChange: (String) -> Unit,
     onFetchSuggestions: () -> Unit
 ) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = "Meal Suggestions", style = MaterialTheme.typography.titleMedium)
-        MealTypeDropdown(
-            mealType = mealType,
-            onMealTypeChange = onMealTypeChange
-        )
-        Button(onClick = onFetchSuggestions, modifier = Modifier.padding(top = 8.dp)) {
-            Text("Get Suggestions")
-        }
-        LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
-            item {
-                Text(suggestions, modifier = Modifier.padding(4.dp))
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Button(
+                    onClick = onFetchSuggestions,
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Text("Get Meal Suggestions")
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                MealTypeDropdown(
+                    mealType = mealType,
+                    onMealTypeChange = onMealTypeChange,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            LazyColumn(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                item {
+                    Text(
+                        suggestions,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
             }
         }
     }
@@ -164,13 +185,46 @@ fun MealSuggestionSection(
 fun MealTypeDropdown(
     mealType: String,
     onMealTypeChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
     mealTypes: List<String> = listOf("Breakfast", "Lunch", "Dinner", "Snack")
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .padding(top = 8.dp)) {
+    Box(modifier = modifier) {
+        TextButton(onClick = { expanded = true }) {
+            Text(text = mealType)
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            mealTypes.forEach { type ->
+                DropdownMenuItem(
+                    text = { Text(text = type) },
+                    onClick = {
+                        onMealTypeChange(type)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun MealTypeDropdown(
+    mealType: String,
+    onMealTypeChange: (String) -> Unit,
+    mealTypes: List<String> = listOf("Breakfast", "Lunch", "Dinner", "Snack")
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+    ) {
         TextButton(onClick = { expanded = true }) {
             Text(text = mealType)
         }

@@ -32,7 +32,7 @@ fun ProductItem(product: ProductEntity) {
         ) {
             Text(text = product.name, style = MaterialTheme.typography.headlineSmall)
             Text(text = "Brand: ${product.brand}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Ingredients: ${product.ingredients}", style = MaterialTheme.typography.bodyMedium)
+            //Text(text = "Ingredients: ${product.ingredients}", style = MaterialTheme.typography.bodyMedium)
 //            val imageUrl = product.image_url ?: "https://via.placeholder.com/150"
 //            Image(
 //                painter = rememberAsyncImagePainter(imageUrl),

@@ -4,4 +4,6 @@
     <item name="action_barcodeScannerFragment_to_addProductFragment" type="id" />
     <item name="addProductFragment" type="id" />
     <item name="productIngredientsLabel" type="id" />
+    <item name="menu_add_manually" type="id" />
+    <item name="menu_use_barcode_scanner" type="id" />
 </resources>

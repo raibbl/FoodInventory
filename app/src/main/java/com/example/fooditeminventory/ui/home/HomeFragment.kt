@@ -1,29 +1,51 @@
 package com.example.fooditeminventory.ui.home
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.PopupMenu
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
-import com.example.fooditeminventory.R
 import com.example.fooditeminventory.api.MealSuggestionRequest
 import com.example.fooditeminventory.api.MealSuggestionResponse
 import com.example.fooditeminventory.api.RetrofitInstance
@@ -55,6 +77,8 @@ class HomeFragment : Fragment() {
     }
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
@@ -64,6 +88,9 @@ fun HomeScreen(navController: NavController) {
     val mealType = remember { mutableStateOf("Dinner") }
     val suggestions = remember { mutableStateOf<String>("") }
     val coroutineScope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember { mutableStateOf(false) }
+    var showSuggestions by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         coroutineScope.launch(Dispatchers.IO) {
@@ -72,7 +99,15 @@ fun HomeScreen(navController: NavController) {
     }
 
     Scaffold(
-        content = { padding ->
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                text = { Text("Get AI Generated Meal") },
+                icon = { Icon(Icons.Filled.Info, contentDescription = null) },
+                onClick = {
+                    showBottomSheet = true
+                }
+            )
+        }, content = { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -82,48 +117,44 @@ fun HomeScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = 8.dp, vertical = 8.dp)
                 ) {
-                    ProductList(products = products.value)
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    MealSuggestionSection(
-                        mealType = mealType.value,
-                        suggestions = suggestions.value,
-                        onMealTypeChange = { mealType.value = it }
-                    ) {
-                        fetchMealSuggestions(products.value, mealType.value, suggestions)
-                    }
+                    ProductList(products = products.value, onDelete = { product ->
+                        coroutineScope.launch(Dispatchers.IO) {
+                            productDao.deleteProduct(product)
+                            products.value = productDao.getAllProducts()
+                        }
+                    })
                 }
             }
         }
     )
-}
 
-fun showPopupMenu(context: Context, anchor: View, navController: NavController) {
-    PopupMenu(context, anchor).apply {
-        menuInflater.inflate(R.menu.menu_fab, menu)
-        setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.menu_add_manually -> {
-                    navController.navigate(R.id.addProductFragment)
-                    true
-                }
-
-                R.id.menu_use_barcode_scanner -> {
-                    navController.navigate(R.id.barcodeScannerFragment)
-                    true
-                }
-
-                else -> false
-            }
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showBottomSheet = false },
+            sheetState = sheetState,
+        ) {
+            MealSuggestionSection(
+                mealType = mealType.value,
+                suggestions = suggestions.value,
+                onMealTypeChange = { mealType.value = it },
+                onFetchSuggestions = {
+                    coroutineScope.launch {
+                        fetchMealSuggestions(products.value, mealType.value, suggestions)
+                        showSuggestions = true
+                    }
+                },
+                onDismiss = {
+                    coroutineScope.launch {
+                        sheetState.hide()
+                        showBottomSheet = false
+                    }
+                },
+                showSuggestions = showSuggestions
+            )
         }
-    }.show()
+    }
 }
 
 @Composable
@@ -131,41 +162,52 @@ fun MealSuggestionSection(
     mealType: String,
     suggestions: String,
     onMealTypeChange: (String) -> Unit,
-    onFetchSuggestions: () -> Unit
+    onFetchSuggestions: () -> Unit,
+    onDismiss: () -> Unit,
+    showSuggestions: Boolean
 ) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-        modifier = Modifier.fillMaxWidth()
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            MealTypeDropdown(
+                mealType = mealType,
+                onMealTypeChange = onMealTypeChange,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                    .weight(1f)
+                    .padding(end = 8.dp)
+            )
+            Button(
+                onClick = {
+                    isLoading = true
+                    coroutineScope.launch {
+                        onFetchSuggestions()
+                        isLoading = false
+                    }
+                },
+                modifier = Modifier.padding(top = 8.dp)
             ) {
-                Button(
-                    onClick = onFetchSuggestions,
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
-                    Text("Get Meal Suggestions")
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                MealTypeDropdown(
-                    mealType = mealType,
-                    onMealTypeChange = onMealTypeChange,
-                    modifier = Modifier.weight(1f)
-                )
+                Text("Get Meal Suggestions")
             }
+        }
+        if (isLoading) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+        } else if (showSuggestions) {
             LazyColumn(
                 modifier = Modifier
-                    .padding(top = 8.dp)
+                    .padding(top = 16.dp)
                     .fillMaxWidth()
                     .weight(1f)
             ) {
@@ -177,6 +219,12 @@ fun MealSuggestionSection(
                     )
                 }
             }
+        }
+        Button(
+            onClick = onDismiss,
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
+        ) {
+            Text("Hide bottom sheet")
         }
     }
 }
@@ -193,6 +241,7 @@ fun MealTypeDropdown(
     Box(modifier = modifier) {
         TextButton(onClick = { expanded = true }) {
             Text(text = mealType)
+            Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null)
         }
         DropdownMenu(
             expanded = expanded,
@@ -210,41 +259,6 @@ fun MealTypeDropdown(
         }
     }
 }
-
-
-@Composable
-fun MealTypeDropdown(
-    mealType: String,
-    onMealTypeChange: (String) -> Unit,
-    mealTypes: List<String> = listOf("Breakfast", "Lunch", "Dinner", "Snack")
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp)
-    ) {
-        TextButton(onClick = { expanded = true }) {
-            Text(text = mealType)
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            mealTypes.forEach { type ->
-                DropdownMenuItem(
-                    text = { Text(text = type) },
-                    onClick = {
-                        onMealTypeChange(type)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
-
 fun fetchMealSuggestions(
     products: List<ProductEntity>,
     mealType: String,

@@ -1,6 +1,5 @@
 package com.example.fooditeminventory.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,11 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
-import com.example.fooditeminventory.api.Product
+import com.example.fooditeminventory.db.ProductEntity
 
 @Composable
-fun ProductList(products: List<Product>) {
+fun ProductList(products: List<ProductEntity>) {
     LazyColumn(modifier = Modifier.padding(5.dp)) {
         items(products) { product ->
             Column(modifier = Modifier.padding(8.dp)) {
@@ -23,7 +21,7 @@ fun ProductList(products: List<Product>) {
     }
 }
 @Composable
-fun ProductItem(product: Product) {
+fun ProductItem(product: ProductEntity) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -32,9 +30,9 @@ fun ProductItem(product: Product) {
         Column(
             modifier = Modifier.padding(12.dp)
         ) {
-            Text(text = product.product_name, style = MaterialTheme.typography.headlineSmall)
-            Text(text = "Brand: ${product.brands}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Ingredients: ${product.ingredients_text}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = product.name, style = MaterialTheme.typography.headlineSmall)
+            Text(text = "Brand: ${product.brand}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Ingredients: ${product.ingredients}", style = MaterialTheme.typography.bodyMedium)
 //            val imageUrl = product.image_url ?: "https://via.placeholder.com/150"
 //            Image(
 //                painter = rememberAsyncImagePainter(imageUrl),

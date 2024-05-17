@@ -6,9 +6,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import coil.load
 import com.example.fooditeminventory.databinding.FragmentAddProductBinding
+import com.example.fooditeminventory.db.ProductDatabase
+import com.example.fooditeminventory.db.ProductEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AddProductFragment : Fragment() {
 
@@ -44,18 +50,28 @@ class AddProductFragment : Fragment() {
             binding.productImage.load(productImageUrl)
         }
 
-        // Handle the save button click
         binding.saveButton.setOnClickListener {
-            // Get the values from the EditText fields
             val updatedProductName = binding.productName.text.toString()
             val updatedProductBrand = binding.productBrand.text.toString()
             val updatedProductIngredients = binding.productIngredients.text.toString()
+            val updatedProductImageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null
 
-            // Save the product information to the app's data storage (logic here)
-            // Consider adding validation for user input before saving
-            Toast.makeText(requireContext(), "Product saved!", Toast.LENGTH_SHORT).show()
+            val product = ProductEntity(
+                name = updatedProductName,
+                brand = updatedProductBrand,
+                ingredients = updatedProductIngredients,
+                imageUrl = updatedProductImageUrl
+            )
 
-            // Optionally, navigate back or to another screen
+            lifecycleScope.launch(Dispatchers.IO) {
+                val db = ProductDatabase.getDatabase(requireContext())
+                db.productDao().insert(product)
+                launch(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Product saved!", Toast.LENGTH_SHORT).show()
+                    val action = AddProductFragmentDirections.actionAddProductFragmentToHomeFragment()
+                    findNavController().navigate(action)
+                }
+            }
         }
     }
 

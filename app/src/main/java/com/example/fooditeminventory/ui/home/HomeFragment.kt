@@ -18,6 +18,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -28,9 +32,11 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.fooditeminventory.R
-import com.example.fooditeminventory.api.Product
+import com.example.fooditeminventory.db.ProductDatabase
+import com.example.fooditeminventory.db.ProductEntity
 import com.example.fooditeminventory.ui.ProductList
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
 
@@ -50,10 +56,19 @@ class HomeFragment : Fragment() {
     }
 }
 
-
 @Composable
 fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
+    val database = ProductDatabase.getDatabase(context)
+    val productDao = database.productDao()
+    val products = remember { mutableStateOf<List<ProductEntity>>(emptyList()) }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch(Dispatchers.IO) {
+            products.value = productDao.getAllProducts()
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -75,7 +90,7 @@ fun HomeScreen(navController: NavController) {
                     },
                     modifier = Modifier
                         .padding(16.dp)
-                        .align(Alignment.BottomEnd)  // Ensure button is positioned at the bottom right
+                        .align(Alignment.BottomEnd)
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Add")
                 }
@@ -86,20 +101,12 @@ fun HomeScreen(navController: NavController) {
             Column(modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)) {
-                val sampleProducts = listOf(
-                    Product("Apple", "Fresh Fruits", "Apples", null, null),
-                    Product("Banana", "Tropical Fruits", "Bananas", null, null),
-                    Product("Banana", "Tropical Fruits", "Bananas", null, null),
-                    Product("Banana", "Tropical Fruits", "Bananas", null, null),
-                    Product("Banana", "Tropical Fruits", "Bananas", null, null),
-                    Product("Banana", "Tropical Fruits", "Bananas", null, null),
-                    Product("Banana", "Tropical Fruits", "Bananas", null, null)
-                )
-                ProductList(products = sampleProducts)
+                ProductList(products = products.value)
             }
         }
     )
 }
+
 fun showPopupMenu(context: Context, anchor: View, navController: NavController) {
     PopupMenu(context, anchor).apply {
         menuInflater.inflate(R.menu.menu_fab, menu)
@@ -118,4 +125,3 @@ fun showPopupMenu(context: Context, anchor: View, navController: NavController) 
         }
     }.show()
 }
-

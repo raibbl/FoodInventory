@@ -68,3 +68,4 @@ local.properties
 *.bin
 /.gradle/buildOutputCleanup
 /.gradle
+/.idea

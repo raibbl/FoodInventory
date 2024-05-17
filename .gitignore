@@ -58,3 +58,13 @@ local.properties
 *.pyc
 *.pyo
 *.class
+*.lock
+*.bin
+*.lock
+*.bin
+*.lock
+*.bin
+*.lock
+*.bin
+/.gradle/buildOutputCleanup
+/.gradle

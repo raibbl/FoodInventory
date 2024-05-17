@@ -15,8 +15,8 @@ data class Product(
     val product_name: String,
     val brands: String,
     val ingredients_text: String,
-    val nutriments: Nutriments?,
-    val image_url:String?
+    val nutriments: Nutriments? = null,
+    val image_url:String? = null
 )
 
 data class Nutriments(

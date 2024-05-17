@@ -1,9 +1,60 @@
-
-/.gradle
-/.idea
-/.gradle/8.2
-/.gradle/8.2/checksums
+# Gradle files
+.gradle/
+**/build/
+!gradle-wrapper.jar
+**/gradle-wrapper.properties
+.gradle/8.2
+.gradle/8.2/checksums
 .gradle/8.2/executionHistory/executionHistory.lock
 *.lock
-/.gradle
+.gradle/
 *.lock
+*.bin
+*.lock
+
+# IDEA files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# User-specific files
+.DS_Store
+*.swp
+
+# Log files
+*.log
+
+# Android specific files
+local.properties
+/.cxx/
+**/*.apk
+**/*.ap_
+**/*.dex
+**/*.class
+**/*.so
+**/*.o
+**/*.a
+**/*.hprof
+
+# IntelliJ specific files
+out/
+
+# Generated files
+gen/
+bin/
+build/
+
+# Android Studio generated files and folders
+captures/
+.externalNativeBuild/
+.cxx/
+local.properties
+
+# Miscellaneous
+*.orig
+*.lock
+*.log
+*.pyc
+*.pyo
+*.class

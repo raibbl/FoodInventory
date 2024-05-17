@@ -174,7 +174,7 @@ class BarcodeScannerFragment : Fragment() {
             progressBar.visibility = View.VISIBLE
         }
 
-        val call = RetrofitInstance.api.getProduct(barcode)
+        val call = RetrofitInstance.foodApi.getProduct(barcode)
         call.enqueue(object : Callback<ProductResponse> {
             @SuppressLint("SetTextI18n")
             override fun onResponse(call: Call<ProductResponse>, response: Response<ProductResponse>) {

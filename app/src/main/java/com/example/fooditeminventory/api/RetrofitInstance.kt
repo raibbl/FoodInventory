@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
     private const val BASE_URL = "https://world.openfoodfacts.org/"
-    private const val BASE_URL_MEAL = "https://raibbliowa.pythonanywhere.com"
+    private const val BASE_URL_MEAL = "https://meal-suggestions-api-pngv3dyqfa-uc.a.run.app/foodplan/us-central1/meal_suggestions_api/"
 
     private val client: OkHttpClient by lazy {
         val logging = HttpLoggingInterceptor()

@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.example.fooditeminventory.R
 import com.example.fooditeminventory.api.Product
 import com.example.fooditeminventory.databinding.FragmentBarcodeScannerBinding
 import com.google.common.util.concurrent.ListenableFuture
@@ -203,7 +204,11 @@ class BarcodeScannerFragment : Fragment() {
                                 productImageUrl = image_url
                             )
 
-                            findNavController().navigate(action)
+                            if (findNavController().currentDestination?.id == R.id.barcodeScannerFragment) {
+                                findNavController().navigate(action)
+                            } else {
+                                println("Navigation action not executed. Current destination is not barcodeScannerFragment.")
+                            }
                         }
                     }
                 } else {

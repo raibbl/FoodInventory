@@ -31,6 +31,6 @@ data class Nutriments(
 )
 
 interface OpenFoodFactsService {
-    @GET("api/v0/product/{barcode}.json")
+    @GET("api/v3/product/{barcode}.json")
     fun getProduct(@Path("barcode") barcode: String): Call<ProductResponse>
 }

@@ -222,9 +222,14 @@ class BarcodeScannerFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<ProductResponse>, t: Throwable) {
-                Toast.makeText(requireContext(), "Failed to fetch product info", Toast.LENGTH_LONG).show()
-                _binding?.apply {
-                    statusTextView.text = "Failed to fetch product info"
+                if (isAdded && context != null) {
+                    Toast.makeText(requireContext(), "Failed to fetch product info", Toast.LENGTH_LONG).show()
+                    _binding?.apply {
+                        statusTextView.text = "Failed to fetch product info"
+                    }
+                } else {
+                    // Optionally log the error or handle the case where the fragment is not attached
+                    Log.e("BarcodeScannerFragment", "Fragment not attached to context", t)
                 }
             }
         })

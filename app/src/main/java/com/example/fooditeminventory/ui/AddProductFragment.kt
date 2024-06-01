@@ -1,82 +1,132 @@
 package com.example.fooditeminventory.ui
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.lifecycle.lifecycleScope
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import coil.load
-import com.example.fooditeminventory.databinding.FragmentAddProductBinding
+import coil.compose.rememberAsyncImagePainter
 import com.example.fooditeminventory.db.AppDatabase
 import com.example.fooditeminventory.db.ProductEntity
+import com.example.fooditeminventory.ui.theme.FoodItemInventoryTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class AddProductFragment : Fragment() {
-
-    private var _binding: FragmentAddProductBinding? = null
-    private val binding get() = _binding!!
 
     private val args: AddProductFragmentArgs by navArgs()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentAddProductBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // Get the arguments passed from BarcodeScannerFragment
-        val productName = args.productName ?: ""
-        val productBrand = args.productBrand ?: ""
-        val productIngredients = args.productIngredients ?: ""
-        val productImageUrl = args.productImageUrl ?: ""
-
-        // Set the values to the EditText fields
-        binding.productName.setText(productName)
-        binding.productBrand.setText(productBrand)
-        binding.productIngredients.setText(productIngredients)
-
-        // Load the product image if available
-        if (productImageUrl.isNotEmpty()) {
-            binding.productImage.load(productImageUrl)
-        }
-
-        binding.saveButton.setOnClickListener {
-            val updatedProductName = binding.productName.text.toString()
-            val updatedProductBrand = binding.productBrand.text.toString()
-            val updatedProductIngredients = binding.productIngredients.text.toString()
-            val updatedProductImageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null
-
-            val product = ProductEntity(
-                name = updatedProductName,
-                brand = updatedProductBrand,
-                ingredients = updatedProductIngredients,
-                imageUrl = updatedProductImageUrl
-            )
-
-            lifecycleScope.launch(Dispatchers.IO) {
-                val db = AppDatabase.getDatabase(requireContext())
-                db.productDao().insert(product)
-                launch(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Product saved!", Toast.LENGTH_SHORT).show()
-                    val action = AddProductFragmentDirections.actionAddProductFragmentToHomeFragment()
-                    findNavController().navigate(action)
+    ): View {
+        return ComposeView(requireContext()).apply {
+            setContent {
+                val navController = findNavController()
+                FoodItemInventoryTheme {
+                    AddProductScreen(navController = navController, args = args)
                 }
             }
         }
     }
+}
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+@Composable
+fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs) {
+    val context = LocalContext.current
+    val db = AppDatabase.getDatabase(context)
+    val coroutineScope = rememberCoroutineScope()
+
+    var productName by remember { mutableStateOf(args.productName ?: "") }
+    var productBrand by remember { mutableStateOf(args.productBrand ?: "") }
+    var productIngredients by remember { mutableStateOf(args.productIngredients ?: "") }
+    val productImageUrl = args.productImageUrl ?: ""
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(12.dp)
+            .background(MaterialTheme.colorScheme.background)  // Set background color from theme
+    ) {
+        OutlinedTextField(
+            value = productName,
+            onValueChange = { productName = it },
+            label = { Text("Product Name") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)  // Set text field background from theme
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = productBrand,
+            onValueChange = { productBrand = it },
+            label = { Text("Product Brand") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)  // Set text field background from theme
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = productIngredients,
+            onValueChange = { productIngredients = it },
+            label = { Text("Product Ingredients") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)  // Set text field background from theme
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (productImageUrl.isNotEmpty()) {
+            Image(
+                painter = rememberAsyncImagePainter(productImageUrl),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .background(MaterialTheme.colorScheme.surface)  // Set image background from theme
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                val product = ProductEntity(
+                    name = productName,
+                    brand = productBrand,
+                    ingredients = productIngredients,
+                    imageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null
+                )
+
+                coroutineScope.launch(Dispatchers.IO) {
+                    db.productDao().insert(product)
+                    launch(Dispatchers.Main) {
+                        Toast.makeText(context, "Product saved!", Toast.LENGTH_SHORT).show()
+                        navController.navigate(AddProductFragmentDirections.actionAddProductFragmentToHomeFragment())
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Save Product")
+        }
     }
 }

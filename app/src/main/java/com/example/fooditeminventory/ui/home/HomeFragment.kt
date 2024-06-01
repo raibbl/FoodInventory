@@ -4,28 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
@@ -59,7 +42,6 @@ class HomeFragment : Fragment() {
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -68,11 +50,10 @@ fun HomeScreen(navController: NavController) {
     val productDao = database.productDao()
     val products = remember { mutableStateOf<List<ProductEntity>>(emptyList()) }
     val mealType = remember { mutableStateOf("Dinner") }
-    val suggestions = remember { mutableStateOf<String>("") }
+    val suggestions = remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
-    var showSuggestions by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         coroutineScope.launch(Dispatchers.IO) {
@@ -89,7 +70,8 @@ fun HomeScreen(navController: NavController) {
                     showBottomSheet = true
                 }
             )
-        }, content = { padding ->
+        },
+        content = { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -101,12 +83,15 @@ fun HomeScreen(navController: NavController) {
                         .weight(1f)
                         .padding(horizontal = 8.dp, vertical = 8.dp)
                 ) {
-                    ProductList(products = products.value, onDelete = { product ->
-                        coroutineScope.launch(Dispatchers.IO) {
-                            productDao.deleteProduct(product)
-                            products.value = productDao.getAllProducts()
+                    ProductList(
+                        products = products.value,
+                        onDelete = { product ->
+                            coroutineScope.launch(Dispatchers.IO) {
+                                productDao.deleteProduct(product)
+                                products.value = productDao.getAllProducts()
+                            }
                         }
-                    })
+                    )
                 }
             }
         }
@@ -115,21 +100,18 @@ fun HomeScreen(navController: NavController) {
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = { showBottomSheet = false },
-            sheetState = sheetState,
+            sheetState = sheetState
         ) {
             MealSuggestionSection(
                 mealType = mealType.value,
                 suggestions = suggestions.value,
                 onMealTypeChange = { mealType.value = it },
-                onFetchSuggestions = {isLoading ->
+                onFetchSuggestions = { isLoading ->
                     coroutineScope.launch {
                         fetchMealSuggestions(products.value, mealType.value, suggestions, isLoading)
-                        showSuggestions = true
                     }
                 },
-                showSuggestions = showSuggestions
             )
         }
     }
 }
-

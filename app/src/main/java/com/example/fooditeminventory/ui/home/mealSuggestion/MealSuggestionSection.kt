@@ -30,7 +30,6 @@ fun MealSuggestionSection(
     suggestions: String,
     onMealTypeChange: (String) -> Unit,
     onFetchSuggestions: (MutableState<Boolean>) -> Unit,
-    showSuggestions: Boolean
 ) {
     val isLoading = remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -65,12 +64,12 @@ fun MealSuggestionSection(
             }
         }
         if (isLoading.value) {
-            println("truing")
+            println("loading")
             CircularProgressIndicator(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(top = 16.dp)
             )
-        } else if (showSuggestions) {
+        } else if(suggestions.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier
                     .padding(top = 16.dp)

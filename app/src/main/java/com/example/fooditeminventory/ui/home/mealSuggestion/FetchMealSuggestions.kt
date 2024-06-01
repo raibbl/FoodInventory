@@ -26,12 +26,10 @@ fun fetchMealSuggestions(
         suggestions.value = "User not authenticated"
         return
     }
-    isLoading.value = true
 
     currentUser.getIdToken(false).addOnCompleteListener { task ->
         if (task.isSuccessful) {
             val idToken = task.result?.token ?: ""
-            try {
                 RetrofitInstance.mealApi.getMealSuggestions("Bearer $idToken", request).enqueue(object :
                     Callback<MealSuggestionResponse> {
                     override fun onResponse(
@@ -43,15 +41,14 @@ fun fetchMealSuggestions(
                         } else {
                             "Failed to fetch suggestions"
                         }
+                        isLoading.value = false
                     }
 
                     override fun onFailure(call: Call<MealSuggestionResponse>, t: Throwable) {
                         suggestions.value = "Failed to fetch suggestions"
+                        isLoading.value = false
                     }
                 })
-            } finally {
-                isLoading.value = false
-            }
         } else {
             suggestions.value = "Failed to fetch authentication token"
             isLoading.value = false

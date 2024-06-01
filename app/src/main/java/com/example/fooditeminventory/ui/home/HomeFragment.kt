@@ -127,12 +127,6 @@ fun HomeScreen(navController: NavController) {
                         showSuggestions = true
                     }
                 },
-                onDismiss = {
-                    coroutineScope.launch {
-                        sheetState.hide()
-                        showBottomSheet = false
-                    }
-                },
                 showSuggestions = showSuggestions
             )
         }

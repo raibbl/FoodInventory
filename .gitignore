@@ -72,3 +72,4 @@ local.properties
 .gradle/file-system.probe
 app/google-services.json
 .idea/appInsightsSettings.xml
+.gradle/file-system.probe

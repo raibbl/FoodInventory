@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,7 +30,6 @@ fun MealSuggestionSection(
     suggestions: String,
     onMealTypeChange: (String) -> Unit,
     onFetchSuggestions: (MutableState<Boolean>) -> Unit,
-    onDismiss: () -> Unit,
     showSuggestions: Boolean
 ) {
     val isLoading = remember { mutableStateOf(false) }
@@ -55,6 +55,7 @@ fun MealSuggestionSection(
             Button(
                 onClick = {
                     coroutineScope.launch {
+                        isLoading.value = true
                         onFetchSuggestions(isLoading)
                     }
                 },
@@ -84,12 +85,6 @@ fun MealSuggestionSection(
                     )
                 }
             }
-        }
-        Button(
-            onClick = onDismiss,
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
-        ) {
-            Text("Hide bottom sheet")
         }
     }
 }

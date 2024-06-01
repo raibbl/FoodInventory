@@ -12,7 +12,7 @@ data class MealSuggestionResponse(val suggestions: String)
 interface MealSuggestionService {
     @POST("/get_meal_suggestions")
     fun getMealSuggestions(
-//        @Header("Authorization") authHeader: String,
+        @Header("Authorization") authHeader: String,
         @Body request: MealSuggestionRequest
     ): Call<MealSuggestionResponse>
 }

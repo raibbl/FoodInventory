@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
-import com.example.fooditeminventory.db.ProductDatabase
+import com.example.fooditeminventory.db.AppDatabase
 import com.example.fooditeminventory.db.ProductEntity
 import com.example.fooditeminventory.ui.ProductList
 import com.example.fooditeminventory.ui.home.mealSuggestion.MealSuggestionSection
@@ -64,7 +64,7 @@ class HomeFragment : Fragment() {
 @Composable
 fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
-    val database = ProductDatabase.getDatabase(context)
+    val database = AppDatabase.getDatabase(context)
     val productDao = database.productDao()
     val products = remember { mutableStateOf<List<ProductEntity>>(emptyList()) }
     val mealType = remember { mutableStateOf("Dinner") }

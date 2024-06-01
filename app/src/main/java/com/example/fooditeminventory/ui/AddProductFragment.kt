@@ -11,7 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import coil.load
 import com.example.fooditeminventory.databinding.FragmentAddProductBinding
-import com.example.fooditeminventory.db.ProductDatabase
+import com.example.fooditeminventory.db.AppDatabase
 import com.example.fooditeminventory.db.ProductEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -64,7 +64,7 @@ class AddProductFragment : Fragment() {
             )
 
             lifecycleScope.launch(Dispatchers.IO) {
-                val db = ProductDatabase.getDatabase(requireContext())
+                val db = AppDatabase.getDatabase(requireContext())
                 db.productDao().insert(product)
                 launch(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "Product saved!", Toast.LENGTH_SHORT).show()

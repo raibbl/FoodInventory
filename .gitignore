@@ -69,3 +69,6 @@ local.properties
 /.gradle/buildOutputCleanup
 /.gradle
 /.idea
+.gradle/file-system.probe
+app/google-services.json
+.idea/appInsightsSettings.xml

@@ -26,7 +26,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
-import coil.compose.AsyncImage
 import com.example.fooditeminventory.R
 import com.example.fooditeminventory.api.Product
 import com.example.fooditeminventory.api.ProductResponse
@@ -121,10 +120,6 @@ class BarcodeScannerFragment : Fragment() {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
 
-            scanResult?.let { product ->
-                ProductInfo(product)
-            }
-
             Button(
                 onClick = { navigateToAddProductFragment(navController, scannedProduct) },
                 modifier = Modifier
@@ -174,18 +169,6 @@ class BarcodeScannerFragment : Fragment() {
             )
         } else {
             Log.e("BarcodeScannerFragment", "Current destination is not barcodeScannerFragment")
-        }
-    }
-
-    @Composable
-    fun ProductInfo(product: Product) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Product Name: ${product.product_name}", style = MaterialTheme.typography.bodySmall)
-            Text(text = "Brand: ${product.brands}", style = MaterialTheme.typography.bodySmall)
-            Text(text = "Ingredients: ${product.ingredients_text}", style = MaterialTheme.typography.bodySmall)
-            product.image_url?.let { url ->
-                AsyncImage(model = url, contentDescription = null, modifier = Modifier.height(200.dp).fillMaxWidth())
-            }
         }
     }
 }

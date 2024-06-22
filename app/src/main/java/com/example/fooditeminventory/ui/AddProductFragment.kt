@@ -8,9 +8,18 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -45,6 +54,42 @@ class AddProductFragment : Fragment() {
 }
 
 @Composable
+fun QuantityControls(productQuantity: Int, onQuantityChange: (Int) -> Unit) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.Start,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text("Quantity:", style = MaterialTheme.typography.bodyLarge, color = Color.White)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "$productQuantity", style = MaterialTheme.typography.bodyLarge, color = Color.White)
+            Spacer(modifier = Modifier.width(16.dp))
+            IconButton(onClick = { if (productQuantity > 1) onQuantityChange(productQuantity - 1) }) {
+                Icon(
+                    imageVector = Icons.Outlined.KeyboardArrowDown,
+                    contentDescription = "Decrease quantity",
+                    tint = Color.White
+                )
+            }
+            IconButton(onClick = { onQuantityChange(productQuantity + 1) }) {
+                Icon(
+                    imageVector = Icons.Outlined.KeyboardArrowUp,
+                    contentDescription = "Increase quantity",
+                    tint = Color.White
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
 fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs) {
     val context = LocalContext.current
     val db = AppDatabase.getDatabase(context)
@@ -55,6 +100,7 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
     var productIngredients by remember { mutableStateOf(args.productIngredients ?: "") }
     var productBarcode by remember { mutableStateOf(args.productBarcode ?: "") }
     var productImageUrl = args.productImageUrl ?: ""
+    var productQuantity by remember { mutableStateOf(1) } // Default quantity to 1
 
     LaunchedEffect(args.productUuid) {
         if (args.productUuid.isNotEmpty()) {
@@ -66,6 +112,7 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                     productIngredients = it.ingredients
                     productBarcode = it.barcode
                     productImageUrl = it.imageUrl ?: ""
+                    productQuantity - it.quantity
                 }
             }
         }
@@ -122,6 +169,12 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
 
         Spacer(modifier = Modifier.height(16.dp))
 
+
+        // Quantity controls
+        QuantityControls(productQuantity = productQuantity, onQuantityChange = { productQuantity = it })
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             onClick = {
                 coroutineScope.launch(Dispatchers.IO) {
@@ -133,7 +186,8 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                             brand = productBrand,
                             ingredients = productIngredients,
                             imageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null,
-                            barcode = productBarcode
+                            barcode = productBarcode,
+                            quantity = productQuantity
                         )
                         db.productDao().insert(product)
                     } else {
@@ -143,7 +197,8 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                             brand = productBrand,
                             ingredients = productIngredients,
                             imageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null,
-                            barcode = productBarcode
+                            barcode = productBarcode,
+                            quantity = 1
                         )
                         db.productDao().insert(product)
                     }

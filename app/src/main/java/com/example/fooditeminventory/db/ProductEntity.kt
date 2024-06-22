@@ -12,5 +12,6 @@ data class ProductEntity(
     val name: String,
     val brand: String,
     val ingredients: String,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val quantity:Int,
 )

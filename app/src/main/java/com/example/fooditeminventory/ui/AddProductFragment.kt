@@ -53,8 +53,23 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
     var productName by remember { mutableStateOf(args.productName ?: "") }
     var productBrand by remember { mutableStateOf(args.productBrand ?: "") }
     var productIngredients by remember { mutableStateOf(args.productIngredients ?: "") }
-    val productImageUrl = args.productImageUrl ?: ""
+    var productBarcode by remember { mutableStateOf(args.productBarcode ?: "") }
+    var productImageUrl = args.productImageUrl ?: ""
 
+    LaunchedEffect(args.productUuid) {
+        if (args.productUuid.isNotEmpty()) {
+            coroutineScope.launch(Dispatchers.IO) {
+                val product = db.productDao().getProductByUuid(args.productUuid)
+                product?.let {
+                    productName = it.name
+                    productBrand = it.brand
+                    productIngredients = it.ingredients
+                    productBarcode = it.barcode
+                    productImageUrl = it.imageUrl ?: ""
+                }
+            }
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -109,15 +124,30 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
 
         Button(
             onClick = {
-                val product = ProductEntity(
-                    name = productName,
-                    brand = productBrand,
-                    ingredients = productIngredients,
-                    imageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null
-                )
-
                 coroutineScope.launch(Dispatchers.IO) {
-                    db.productDao().insert(product)
+                    if (args.productUuid.isNotEmpty()) {
+                        // Update existing product
+                        val product = ProductEntity(
+                            uuid = args.productUuid,
+                            name = productName,
+                            brand = productBrand,
+                            ingredients = productIngredients,
+                            imageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null,
+                            barcode = productBarcode
+                        )
+                        db.productDao().insert(product)
+                    } else {
+                        // Insert new product
+                        val product = ProductEntity(
+                            name = productName,
+                            brand = productBrand,
+                            ingredients = productIngredients,
+                            imageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null,
+                            barcode = productBarcode
+                        )
+                        db.productDao().insert(product)
+                    }
+
                     launch(Dispatchers.Main) {
                         Toast.makeText(context, "Product saved!", Toast.LENGTH_SHORT).show()
                         navController.navigate(AddProductFragmentDirections.actionAddProductFragmentToHomeFragment())

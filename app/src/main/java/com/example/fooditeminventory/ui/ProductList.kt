@@ -1,6 +1,7 @@
 package com.example.fooditeminventory.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,13 +19,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.fooditeminventory.db.ProductEntity
+import com.example.fooditeminventory.ui.home.HomeFragmentDirections
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ProductList(products: List<ProductEntity>, onDelete: (ProductEntity) -> Unit) {
+fun ProductList(products: List<ProductEntity>, onDelete: (ProductEntity) -> Unit,navController: NavController) {
     LazyColumn(modifier = Modifier.padding(5.dp)) {
-        items(products, key = { it.id }) { product ->
+        items(products, key = { it.uuid }) { product ->
             val dismissState = rememberDismissState()
 
             if (dismissState.isDismissed(DismissDirection.EndToStart)) {
@@ -54,20 +57,28 @@ fun ProductList(products: List<ProductEntity>, onDelete: (ProductEntity) -> Unit
                     }
                 },
                 dismissContent = {
-                    ProductItem(product)
+                    ProductItem(product) {
+                        navController.navigate(
+                            HomeFragmentDirections.actionHomeToAddProductFragment(
+                                productUuid = product.uuid
+                            )
+                        )
+                    }
                 }
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ProductItem(product: ProductEntity) {
+fun ProductItem(product: ProductEntity,onClick: () -> Unit) {
     Card(
         elevation = 4.dp,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
+            .clickable(onClick = onClick)
     ) {
         Column(
             modifier = Modifier

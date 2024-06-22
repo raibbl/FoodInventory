@@ -8,8 +8,12 @@
     <fragment
         android:id="@+id/nav_home"
         android:name="com.example.fooditeminventory.ui.home.HomeFragment"
-        android:label="@string/menu_home"
-        tools:layout="@layout/fragment_home" />
+        android:label="@string/menu_home">
+    <action
+        android:id="@+id/action_home_to_addProductFragment"
+        app:destination="@id/addProductFragment" />
+        />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_gallery"
@@ -55,6 +59,14 @@
             android:defaultValue="" />
         <argument
             android:name="productImageUrl"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="productBarcode"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="productUuid"
             app:argType="string"
             android:defaultValue="" />
         <action

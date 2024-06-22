@@ -90,7 +90,8 @@ fun HomeScreen(navController: NavController) {
                                 productDao.deleteProduct(product)
                                 products.value = productDao.getAllProducts()
                             }
-                        }
+                        },
+                        navController = navController
                     )
                 }
             }

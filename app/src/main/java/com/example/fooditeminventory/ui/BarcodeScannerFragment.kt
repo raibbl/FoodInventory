@@ -164,7 +164,8 @@ class BarcodeScannerFragment : Fragment() {
                     productName = product?.product_name ?: "",
                     productBrand = product?.brands ?: "",
                     productIngredients = product?.ingredients_text ?: "",
-                    productImageUrl = product?.image_url ?: ""
+                    productImageUrl = product?.image_url ?: "",
+                    productBarcode = product?.code?: ""
                 )
             )
         } else {

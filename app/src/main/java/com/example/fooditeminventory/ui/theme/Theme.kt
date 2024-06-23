@@ -12,9 +12,10 @@ private val DarkColorScheme = darkColorScheme(
     secondary = Color(0xFF03DAC5), // teal_200
     onSecondary = Color.Black,
     background = Color.Black,
-    onBackground = Color.White,
-    surface = Color.DarkGray,
-    onSurface = Color.White
+    onBackground = Color.DarkGray,
+    surface = Color.Black,
+    onSurface = Color.White,
+    surfaceDim = Color(0xFF121212) // Custom dimmed surface for dark theme
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -24,9 +25,10 @@ private val LightColorScheme = lightColorScheme(
     secondary = Color(0xFF03DAC5), // teal_200
     onSecondary = Color.Black,
     background = Color.White,
-    onBackground = Color.Black,
+    onBackground = Color.White,
     surface = Color.White,
-    onSurface = Color.Black
+    onSurface = Color.Black,
+    surfaceDim = Color.White
 )
 
 @Composable
@@ -45,4 +47,7 @@ fun FoodItemInventoryTheme(
         typography = Typography(),
         content = content
     )
+
+
 }
+

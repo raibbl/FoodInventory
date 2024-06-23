@@ -22,10 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.fooditeminventory.db.ProductEntity
 import com.example.fooditeminventory.ui.home.HomeFragmentDirections
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ProductList(products: List<ProductEntity>, onDelete: (ProductEntity) -> Unit,navController: NavController) {
+fun ProductList(products: List<ProductEntity>, onDelete: (ProductEntity) -> Unit, navController: NavController) {
     LazyColumn(modifier = Modifier.padding(5.dp)) {
         items(products, key = { it.uuid }) { product ->
             val dismissState = rememberDismissState()
@@ -72,7 +73,7 @@ fun ProductList(products: List<ProductEntity>, onDelete: (ProductEntity) -> Unit
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ProductItem(product: ProductEntity,onClick: () -> Unit) {
+fun ProductItem(product: ProductEntity, onClick: () -> Unit) {
     Card(
         elevation = 4.dp,
         modifier = Modifier
@@ -82,11 +83,11 @@ fun ProductItem(product: ProductEntity,onClick: () -> Unit) {
     ) {
         Column(
             modifier = Modifier
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.onBackground)
                 .padding(12.dp)
         ) {
-            Text(text = product.name, style = androidx.compose.material3.MaterialTheme.typography.headlineSmall)
-            Text(text = "Brand: ${product.brand}", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            Text(text = product.name, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = "Brand: ${product.brand}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -21,6 +22,7 @@ import com.example.fooditeminventory.db.ProductEntity
 import com.example.fooditeminventory.ui.ProductList
 import com.example.fooditeminventory.ui.home.mealSuggestion.MealSuggestionSection
 import com.example.fooditeminventory.ui.home.mealSuggestion.fetchMealSuggestions
+import com.example.fooditeminventory.ui.theme.FoodItemInventoryTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -34,7 +36,7 @@ class HomeFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 val navController = findNavController()
-                MaterialTheme {
+                FoodItemInventoryTheme {
                     HomeScreen(navController = navController)
                 }
             }
@@ -64,12 +66,15 @@ fun HomeScreen(navController: NavController) {
     Scaffold(
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                text = { Text("Get AI Generated Meal") },
-                icon = { Icon(Icons.Filled.Info, contentDescription = null) },
+                text = { Text("Get AI Generated Meal", color = Color.White) },
+                icon = { Icon(Icons.Filled.Info, contentDescription = null, tint =  Color.White) },
                 onClick = {
                     showBottomSheet = true
-                }
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             )
+
         },
         content = { padding ->
             Column(
@@ -81,7 +86,7 @@ fun HomeScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                        .padding(horizontal = 4.dp, vertical = 4.dp)
                 ) {
                     ProductList(
                         products = products.value,

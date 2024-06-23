@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
 import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.SwipeToDismiss
@@ -23,10 +24,46 @@ import androidx.navigation.NavController
 import com.example.fooditeminventory.db.ProductEntity
 import com.example.fooditeminventory.ui.home.HomeFragmentDirections
 import androidx.compose.material3.MaterialTheme
-
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ProductList(products: List<ProductEntity>, onDelete: (ProductEntity) -> Unit, navController: NavController) {
+    if (products.isEmpty()) {
+        EmptyProductListMessage()
+    } else {
+        ProductListContent(products = products, onDelete = onDelete, navController = navController)
+    }
+}
+
+@Composable
+fun EmptyProductListMessage() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            Text(
+                text = "No products yet!",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "Tap above to add your first product.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ProductListContent(products: List<ProductEntity>, onDelete: (ProductEntity) -> Unit, navController: NavController) {
     LazyColumn(modifier = Modifier.padding(5.dp)) {
         items(products, key = { it.uuid }) { product ->
             val dismissState = rememberDismissState()
@@ -38,25 +75,7 @@ fun ProductList(products: List<ProductEntity>, onDelete: (ProductEntity) -> Unit
             SwipeToDismiss(
                 state = dismissState,
                 directions = setOf(DismissDirection.EndToStart),
-                background = {
-                    val color = when (dismissState.dismissDirection) {
-                        DismissDirection.EndToStart -> Color.Red
-                        else -> Color.Transparent
-                    }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(color)
-                            .padding(8.dp),
-                        contentAlignment = Alignment.CenterEnd
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = Color.White
-                        )
-                    }
-                },
+                background = { SwipeToDismissBackground(dismissState) },
                 dismissContent = {
                     ProductItem(product) {
                         navController.navigate(
@@ -68,6 +87,28 @@ fun ProductList(products: List<ProductEntity>, onDelete: (ProductEntity) -> Unit
                 }
             )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun SwipeToDismissBackground(dismissState: DismissState) {
+    val color = when (dismissState.dismissDirection) {
+        DismissDirection.EndToStart -> Color.Red
+        else -> Color.Transparent
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color)
+            .padding(8.dp),
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Icon(
+            imageVector = Icons.Default.Delete,
+            contentDescription = "Delete",
+            tint = Color.White
+        )
     }
 }
 

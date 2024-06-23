@@ -62,26 +62,24 @@ fun QuantityControls(productQuantity: Int, onQuantityChange: (Int) -> Unit) {
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Text("Quantity:", style = MaterialTheme.typography.bodyLarge, color = Color.White)
+        Text("Quantity:", style = MaterialTheme.typography.bodyLarge)
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start,
+            horizontalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "$productQuantity", style = MaterialTheme.typography.bodyLarge, color = Color.White)
+            Text(text = "$productQuantity", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.width(16.dp))
             IconButton(onClick = { if (productQuantity > 1) onQuantityChange(productQuantity - 1) }) {
                 Icon(
                     imageVector = Icons.Outlined.KeyboardArrowDown,
                     contentDescription = "Decrease quantity",
-                    tint = Color.White
                 )
             }
             IconButton(onClick = { onQuantityChange(productQuantity + 1) }) {
                 Icon(
                     imageVector = Icons.Outlined.KeyboardArrowUp,
                     contentDescription = "Increase quantity",
-                    tint = Color.White
                 )
             }
         }
@@ -100,7 +98,7 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
     var productIngredients by remember { mutableStateOf(args.productIngredients ?: "") }
     var productBarcode by remember { mutableStateOf(args.productBarcode ?: "") }
     var productImageUrl = args.productImageUrl ?: ""
-    var productQuantity by remember { mutableStateOf(1) } // Default quantity to 1
+    var productQuantity by remember { mutableStateOf(1) }
 
     LaunchedEffect(args.productUuid) {
         if (args.productUuid.isNotEmpty()) {
@@ -112,7 +110,7 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                     productIngredients = it.ingredients
                     productBarcode = it.barcode
                     productImageUrl = it.imageUrl ?: ""
-                    productQuantity - it.quantity
+                    productQuantity = it.quantity
                 }
             }
         }

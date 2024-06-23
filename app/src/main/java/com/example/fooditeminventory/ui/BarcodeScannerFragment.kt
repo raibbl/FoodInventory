@@ -96,20 +96,20 @@ class BarcodeScannerFragment : Fragment() {
 
     @Composable
     fun CameraPreviewScreen(navController: NavController) {
-        var scanResult by remember { mutableStateOf<Product?>(null) }
         var isLoading by remember { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
 
         Box(modifier = Modifier.fillMaxSize()) {
             CameraPreview(
                 onBarcodeDetected = { barcodeValue ->
-                    coroutineScope.launch(Dispatchers.IO) {
-                        isLoading = true
-                        fetchProductInfo(barcodeValue) { product ->
-                            scanResult = product
-                            isLoading = false
-                            scannedProduct = product
-                            navigateToAddProductFragment(navController, product)
+                    if (!isLoading) { // Check if already loading
+                        isLoading = true // Set isLoading to true when processing starts
+                        coroutineScope.launch(Dispatchers.IO) {
+                            fetchProductInfo(barcodeValue) { product ->
+                                isLoading = false // Set isLoading back to false after processing
+                                scannedProduct = product
+                                navigateToAddProductFragment(navController, product)
+                            }
                         }
                     }
                 },

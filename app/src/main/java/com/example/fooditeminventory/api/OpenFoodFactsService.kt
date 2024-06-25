@@ -12,12 +12,13 @@ data class ProductResponse(
 
 
 data class Product(
-    val product_name: String,
-    val brands: String,
-    val ingredients_text: String,
-    val code :String ,
+    var product_name: String,
+    var brands: String,
+    var ingredients_text: String,
+    val code :String,
     val nutriments: Nutriments? = null,
-    val image_url:String? = null
+    val image_url:String? = null,
+    val allergens:String?=null,
 )
 
 data class Nutriments(

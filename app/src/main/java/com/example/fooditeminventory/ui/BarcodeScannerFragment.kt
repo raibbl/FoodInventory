@@ -27,9 +27,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.fooditeminventory.R
-import com.example.fooditeminventory.api.Product
-import com.example.fooditeminventory.api.ProductResponse
-import com.example.fooditeminventory.api.RetrofitInstance
 import com.example.fooditeminventory.ui.theme.FoodItemInventoryTheme
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -37,16 +34,12 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class BarcodeScannerFragment : Fragment() {
 
     private lateinit var cameraExecutor: ExecutorService
-    private var scannedProduct: Product? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -103,12 +96,11 @@ class BarcodeScannerFragment : Fragment() {
             CameraPreview(
                 onBarcodeDetected = { barcodeValue ->
                     if (!isLoading) { // Check if already loading
-                        isLoading = true // Set isLoading to true when processing starts
+                        isLoading = true
                         coroutineScope.launch(Dispatchers.IO) {
                             fetchProductInfo(barcodeValue) { product ->
                                 isLoading = false // Set isLoading back to false after processing
-                                scannedProduct = product
-                                navigateToAddProductFragment(navController, product)
+                                navigateToAddProductFragment(navController, barcodeValue)
                             }
                         }
                     }
@@ -121,7 +113,7 @@ class BarcodeScannerFragment : Fragment() {
             }
 
             Button(
-                onClick = { navigateToAddProductFragment(navController, scannedProduct) },
+                onClick = { navigateToAddProductFragment(navController, "") },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(16.dp)
@@ -138,34 +130,13 @@ class BarcodeScannerFragment : Fragment() {
         }
     }
 
-    private fun fetchProductInfo(barcode: String, onResult: (Product?) -> Unit) {
-        val call = RetrofitInstance.foodApi.getProduct(barcode)
-        call.enqueue(object : Callback<ProductResponse> {
-            override fun onResponse(call: Call<ProductResponse>, response: Response<ProductResponse>) {
-                if (response.isSuccessful) {
-                    onResult(response.body()?.product)
-                } else {
-                    Log.e("BarcodeScannerFragment", "Error: ${response.errorBody()?.string()}")
-                    onResult(null)
-                }
-            }
 
-            override fun onFailure(call: Call<ProductResponse>, t: Throwable) {
-                Log.e("BarcodeScannerFragment", "Failed to fetch product info", t)
-                onResult(null)
-            }
-        })
-    }
 
-    private fun navigateToAddProductFragment(navController: NavController, product: Product?) {
+    private fun navigateToAddProductFragment(navController: NavController, productBarcode:String) {
         if (navController.currentDestination?.id == R.id.barcodeScannerFragment) {
             navController.navigate(
                 BarcodeScannerFragmentDirections.actionBarcodeScannerFragmentToAddProductFragment(
-                    productName = product?.product_name ?: "",
-                    productBrand = product?.brands ?: "",
-                    productIngredients = product?.ingredients_text ?: "",
-                    productImageUrl = product?.image_url ?: "",
-                    productBarcode = product?.code?: ""
+                    productBarcode = productBarcode
                 )
             )
         } else {

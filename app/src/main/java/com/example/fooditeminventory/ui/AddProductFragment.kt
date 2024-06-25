@@ -127,6 +127,8 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                     productBarcode = it.barcode
                     productImageUrl = it.imageUrl ?: ""
                     productQuantity = it.quantity
+                    productAllergens = it.allergens
+                    productNutriments = it.nutriments
                 }
             }
         } else if (productBarcode.isNotEmpty()) {
@@ -183,7 +185,9 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                                 ingredients = productIngredients,
                                 imageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null,
                                 barcode = productBarcode,
-                                quantity = productQuantity
+                                quantity = productQuantity,
+                                nutriments = productNutriments,
+                                allergens = productAllergens
                             )
                             db.productDao().insert(product)
                         } else {
@@ -194,7 +198,9 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                                 ingredients = productIngredients,
                                 imageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null,
                                 barcode = productBarcode,
-                                quantity = productQuantity
+                                quantity = productQuantity,
+                                nutriments = productNutriments,
+                                allergens = productAllergens
                             )
                             db.productDao().insert(product)
                         }

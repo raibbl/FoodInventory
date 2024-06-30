@@ -80,7 +80,8 @@ fun MealSuggestionSection(
                     Text(
                         suggestions,
                         fontSize = 16.sp,
-                        modifier = Modifier.padding(8.dp)
+                        modifier = Modifier.padding(8.dp),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

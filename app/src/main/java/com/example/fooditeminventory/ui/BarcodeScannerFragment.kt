@@ -27,6 +27,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.fooditeminventory.R
+import com.example.fooditeminventory.api.Product
+import com.example.fooditeminventory.api.ProductResponse
+import com.example.fooditeminventory.api.RetrofitInstance
 import com.example.fooditeminventory.db.AppDatabase
 import com.example.fooditeminventory.db.ProductEntity
 import com.example.fooditeminventory.ui.theme.FoodItemInventoryTheme
@@ -37,6 +40,9 @@ import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -260,4 +266,23 @@ class BarcodeAnalyzer(
                 }
         }
     }
+}
+
+fun fetchProductInfo(barcode: String, onResult: (Product?) -> Unit) {
+    val call = RetrofitInstance.foodApi.getProduct(barcode)
+    call.enqueue(object : Callback<ProductResponse> {
+        override fun onResponse(call: Call<ProductResponse>, response: Response<ProductResponse>) {
+            if (response.isSuccessful) {
+                onResult(response.body()?.product)
+            } else {
+                Log.e("BarcodeScannerFragment", "Error: ${response.errorBody()?.string()}")
+                onResult(null)
+            }
+        }
+
+        override fun onFailure(call: Call<ProductResponse>, t: Throwable) {
+            Log.e("BarcodeScannerFragment", "Failed to fetch product info", t)
+            onResult(null)
+        }
+    })
 }

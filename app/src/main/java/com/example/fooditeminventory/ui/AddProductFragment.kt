@@ -1,7 +1,6 @@
 package com.example.fooditeminventory.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,17 +24,11 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import coil.compose.rememberAsyncImagePainter
 import com.example.fooditeminventory.api.Nutriments
-import com.example.fooditeminventory.api.Product
-import com.example.fooditeminventory.api.ProductResponse
-import com.example.fooditeminventory.api.RetrofitInstance
 import com.example.fooditeminventory.db.AppDatabase
 import com.example.fooditeminventory.db.ProductEntity
 import com.example.fooditeminventory.ui.theme.FoodItemInventoryTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class AddProductFragment : Fragment() {
 
@@ -106,32 +99,12 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
     val context = LocalContext.current
     val db = AppDatabase.getDatabase(context)
     val coroutineScope = rememberCoroutineScope()
-
-    var productName by remember { mutableStateOf(args.productName ?: "") }
-    var productBrand by remember { mutableStateOf(args.productBrand ?: "") }
-    var productIngredients by remember { mutableStateOf(args.productIngredients ?: "") }
-    var productBarcode by remember { mutableStateOf(args.productBarcode) }
-    var productImageUrl by remember { mutableStateOf(args.productImageUrl) }
-    var productQuantity by remember { mutableStateOf(1) }
-    var productNutriments by remember { mutableStateOf<Nutriments?>(null) }
-    var productAllergens by remember { mutableStateOf<String?>(null) }
-    var servingSize by remember { mutableStateOf<String?>(null) }
+    var productEntity by remember { mutableStateOf<ProductEntity?>(null) }
 
     LaunchedEffect(args.productUuid) {
         if (args.productUuid.isNotEmpty()) {
             coroutineScope.launch(Dispatchers.IO) {
-                val product = db.productDao().getProductByUuid(args.productUuid)
-                product?.let {
-                    productName = it.name
-                    productBrand = it.brand
-                    productIngredients = it.ingredients
-                    productBarcode = it.barcode
-                    productImageUrl = it.images?.getOrNull(0) ?: ""
-                    productQuantity = it.quantity
-                    productAllergens = it.allergens
-                    productNutriments = it.nutriments
-                    servingSize = it.serving_size
-                }
+                productEntity = db.productDao().getProductByUuid(args.productUuid)
             }
         }
     }
@@ -151,44 +124,51 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                 Text("Nutritional Info")
             }
         }
-        when (selectedTabIndex) {
-            0 -> ProductDetails(
-                productName = productName,
-                onProductNameChange = { productName = it },
-                productBrand = productBrand,
-                onProductBrandChange = { productBrand = it },
-                productIngredients = productIngredients,
-                onProductIngredientsChange = { productIngredients = it },
-                productImageUrl = productImageUrl,
-                productQuantity = productQuantity,
-                onProductQuantityChange = { productQuantity = it },
-                saveProduct = {
-                    coroutineScope.launch(Dispatchers.IO) {
-                        if (args.productUuid.isNotEmpty()) {
-                            // Update existing product
-                            val product = ProductEntity(
-                                uuid = args.productUuid,
-                                name = productName,
-                                brand = productBrand,
-                                ingredients = productIngredients,
-                                images = listOfNotNull(if (productImageUrl.isNotEmpty()) productImageUrl else null),
-                                barcode = productBarcode,
-                                quantity = productQuantity,
-                                nutriments = productNutriments,
-                                allergens = productAllergens,
-                                serving_size = servingSize
-                            )
-                            db.productDao().insert(product)
-                        }
+        productEntity?.let { entity ->
+            var productName by remember { mutableStateOf(entity.name) }
+            var productBrand by remember { mutableStateOf(entity.brand) }
+            var productIngredients by remember { mutableStateOf(entity.ingredients) }
+            var productImageUrl by remember { mutableStateOf(if (entity.images.isNotEmpty()) entity.images[0] else "") }
+            var productQuantity by remember { mutableStateOf(entity.quantity) }
+            var productNutriments by remember { mutableStateOf(entity.nutriments) }
+            var productAllergens by remember { mutableStateOf(entity.allergens) }
 
-                        launch(Dispatchers.Main) {
-                            Toast.makeText(context, "Product saved!", Toast.LENGTH_SHORT).show()
-                            navController.navigate(AddProductFragmentDirections.actionAddProductFragmentToHomeFragment())
+            when (selectedTabIndex) {
+                0 -> ProductDetails(
+                    productName = productName,
+                    onProductNameChange = { productName = it },
+                    productBrand = productBrand,
+                    onProductBrandChange = { productBrand = it },
+                    productIngredients = productIngredients,
+                    onProductIngredientsChange = { productIngredients = it },
+                    productImageUrl = productImageUrl,
+                    productQuantity = productQuantity,
+                    onProductQuantityChange = { productQuantity = it },
+                    saveProduct = {
+                        coroutineScope.launch(Dispatchers.IO) {
+                            if (args.productUuid.isNotEmpty()) {
+                                // Update existing product
+                                val updatedProduct = entity.copy(
+                                    name = productName,
+                                    brand = productBrand,
+                                    ingredients = productIngredients,
+                                    images = listOfNotNull(if (productImageUrl.isNotEmpty()) productImageUrl else null),
+                                    quantity = productQuantity,
+                                    nutriments = productNutriments,
+                                    allergens = productAllergens
+                                )
+                                db.productDao().insert(updatedProduct)
+                            }
+
+                            launch(Dispatchers.Main) {
+                                Toast.makeText(context, "Product saved!", Toast.LENGTH_SHORT).show()
+                                navController.navigate(AddProductFragmentDirections.actionAddProductFragmentToHomeFragment())
+                            }
                         }
                     }
-                }
-            )
-            1 -> NutritionalInfo(nutriments = productNutriments)
+                )
+                1 -> NutritionalInfo(nutriments = productNutriments)
+            }
         }
     }
 }
@@ -215,7 +195,6 @@ fun ProductDetails(
         item {
             Spacer(modifier = Modifier.height(8.dp))
             if (productImageUrl.isNotEmpty()) {
-
                 Image(
                     painter = rememberAsyncImagePainter(productImageUrl),
                     contentDescription = null,
@@ -287,23 +266,4 @@ fun NutritionalInfo(nutriments: Nutriments?) {
             nutriments.fiber?.let { Text(text = "Fiber: $it", color = MaterialTheme.colorScheme.onSurface) }
         }
     }
-}
-
-fun fetchProductInfo(barcode: String, onResult: (Product?) -> Unit) {
-    val call = RetrofitInstance.foodApi.getProduct(barcode)
-    call.enqueue(object : Callback<ProductResponse> {
-        override fun onResponse(call: Call<ProductResponse>, response: Response<ProductResponse>) {
-            if (response.isSuccessful) {
-                onResult(response.body()?.product)
-            } else {
-                Log.e("BarcodeScannerFragment", "Error: ${response.errorBody()?.string()}")
-                onResult(null)
-            }
-        }
-
-        override fun onFailure(call: Call<ProductResponse>, t: Throwable) {
-            Log.e("BarcodeScannerFragment", "Failed to fetch product info", t)
-            onResult(null)
-        }
-    })
 }

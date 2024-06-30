@@ -33,7 +33,6 @@ import kotlinx.coroutines.launch
 class AddProductFragment : Fragment() {
 
     private val args: AddProductFragmentArgs by navArgs()
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -167,7 +166,7 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                         }
                     }
                 )
-                1 -> NutritionalInfo(nutriments = productNutriments)
+                1 -> NutritionalInfo(nutriments = productNutriments, servingSize = entity.serving_size)
             }
         }
     }
@@ -249,13 +248,14 @@ fun ProductDetails(
 }
 
 @Composable
-fun NutritionalInfo(nutriments: Nutriments?) {
+fun NutritionalInfo(nutriments: Nutriments?,servingSize : String?) {
     if (nutriments != null) {
         Column(modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)) {
             Text(text = "Nutritional Information", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
             Spacer(modifier = Modifier.height(8.dp))
+            servingSize?.let { Text(text = "Serving Size: $it", color = MaterialTheme.colorScheme.onSurface) }
             nutriments.energy?.let { Text(text = "Energy: $it", color = MaterialTheme.colorScheme.onSurface) }
             nutriments.fat?.let { Text(text = "Fat: $it", color = MaterialTheme.colorScheme.onSurface) }
             nutriments.saturated_fat?.let { Text(text = "Saturated Fat: $it", color = MaterialTheme.colorScheme.onSurface) }

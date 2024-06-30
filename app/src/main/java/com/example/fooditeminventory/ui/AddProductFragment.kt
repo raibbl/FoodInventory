@@ -115,6 +115,7 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
     var productQuantity by remember { mutableStateOf(1) }
     var productNutriments by remember { mutableStateOf<Nutriments?>(null) }
     var productAllergens by remember { mutableStateOf<String?>(null) }
+    var servingSize by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(args.productUuid) {
         if (args.productUuid.isNotEmpty()) {
@@ -125,24 +126,11 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                     productBrand = it.brand
                     productIngredients = it.ingredients
                     productBarcode = it.barcode
-                    productImageUrl = it.imageUrl ?: ""
+                    productImageUrl = it.images?.getOrNull(0) ?: ""
                     productQuantity = it.quantity
                     productAllergens = it.allergens
                     productNutriments = it.nutriments
-                }
-            }
-        } else if (productBarcode.isNotEmpty()) {
-            coroutineScope.launch {
-                fetchProductInfo(productBarcode) { fetchedProduct ->
-                    fetchedProduct?.let {
-                        productName = it.product_name
-                        productBrand = it.brands
-                        productIngredients = it.ingredients_text
-                        productBarcode = it.code
-                        productImageUrl = it.image_url ?: ""
-                        productNutriments = it.nutriments
-                        productAllergens = it.allergens
-                    }
+                    servingSize = it.serving_size
                 }
             }
         }
@@ -183,24 +171,12 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                                 name = productName,
                                 brand = productBrand,
                                 ingredients = productIngredients,
-                                imageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null,
+                                images = listOfNotNull(if (productImageUrl.isNotEmpty()) productImageUrl else null),
                                 barcode = productBarcode,
                                 quantity = productQuantity,
                                 nutriments = productNutriments,
-                                allergens = productAllergens
-                            )
-                            db.productDao().insert(product)
-                        } else {
-                            // Insert new product
-                            val product = ProductEntity(
-                                name = productName,
-                                brand = productBrand,
-                                ingredients = productIngredients,
-                                imageUrl = if (productImageUrl.isNotEmpty()) productImageUrl else null,
-                                barcode = productBarcode,
-                                quantity = productQuantity,
-                                nutriments = productNutriments,
-                                allergens = productAllergens
+                                allergens = productAllergens,
+                                serving_size = servingSize
                             )
                             db.productDao().insert(product)
                         }

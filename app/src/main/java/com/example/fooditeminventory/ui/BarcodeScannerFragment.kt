@@ -27,6 +27,8 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.fooditeminventory.R
+import com.example.fooditeminventory.db.AppDatabase
+import com.example.fooditeminventory.db.ProductEntity
 import com.example.fooditeminventory.ui.theme.FoodItemInventoryTheme
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -34,6 +36,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -91,23 +94,52 @@ class BarcodeScannerFragment : Fragment() {
     fun CameraPreviewScreen(navController: NavController) {
         var isLoading by remember { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
+        val context = LocalContext.current
 
         Box(modifier = Modifier.fillMaxSize()) {
             CameraPreview(
                 onBarcodeDetected = { barcodeValue ->
-                    if (!isLoading) { // Check if already loading
+                    if (!isLoading) {
                         isLoading = true
                         coroutineScope.launch(Dispatchers.IO) {
+                            val db = AppDatabase.getDatabase(context)
                             fetchProductInfo(barcodeValue) { product ->
                                 isLoading = false // Set isLoading back to false after processing
-                                navigateToAddProductFragment(navController, barcodeValue)
+                                product?.let {
+                                    // Create a new ProductEntity
+                                    val productEntity = ProductEntity(
+                                        name = it.product_name,
+                                        brand = it.brands,
+                                        ingredients = it.ingredients_text,
+                                        images = listOfNotNull(
+                                            it.selected_images?.front?.small?.en,
+                                            it.selected_images?.ingredients?.small?.en,
+                                            it.selected_images?.nutrition?.small?.en,
+                                            it.selected_images?.packaging?.small?.en
+                                        ).takeIf { it.isNotEmpty() } ?: emptyList(),
+                                        barcode = it.code,
+                                        quantity = 1,
+                                        nutriments = it.nutriments,
+                                        allergens = it.allergens,
+                                        serving_size = it.serving_size
+                                    )
+                                    coroutineScope.launch(Dispatchers.IO) {
+                                        val uuid = productEntity.uuid
+                                        db.productDao().insert(productEntity)
+                                        withContext(Dispatchers.Main) {
+                                            navigateToAddProductFragment(
+                                                navController,
+                                                uuid
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 },
                 modifier = Modifier.fillMaxSize()
             )
-
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
@@ -132,11 +164,11 @@ class BarcodeScannerFragment : Fragment() {
 
 
 
-    private fun navigateToAddProductFragment(navController: NavController, productBarcode:String) {
+    private fun navigateToAddProductFragment(navController: NavController, productUuid:String) {
         if (navController.currentDestination?.id == R.id.barcodeScannerFragment) {
             navController.navigate(
                 BarcodeScannerFragmentDirections.actionBarcodeScannerFragmentToAddProductFragment(
-                    productBarcode = productBarcode
+                    productUuid = productUuid
                 )
             )
         } else {

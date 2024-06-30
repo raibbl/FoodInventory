@@ -18,7 +18,26 @@ data class Product(
     val code :String,
     val nutriments: Nutriments? = null,
     val image_url:String? = null,
-    val allergens:String?=null,
+    val selected_images: SelectedImages? = null,
+    val allergens: String? = null,
+    val serving_size:String? = null,
+)
+
+data class SelectedImages(
+    val front: ImageType?,
+    val ingredients: ImageType?,
+    val nutrition: ImageType?,
+    val packaging: ImageType?
+)
+
+data class ImageType(
+    val display: ImageTypeProps?,
+    val small: ImageTypeProps?,
+    val thumb: ImageTypeProps?
+)
+
+data class ImageTypeProps(
+    val en: String,
 )
 
 data class Nutriments(

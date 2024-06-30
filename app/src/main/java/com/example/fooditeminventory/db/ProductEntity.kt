@@ -15,6 +15,7 @@ data class ProductEntity(
     val ingredients: String,
     val nutriments: Nutriments?,
     val allergens:String?,
-    val imageUrl: String?,
+    val images: List<String>,
     val quantity:Int,
+    val serving_size: String?,
 )

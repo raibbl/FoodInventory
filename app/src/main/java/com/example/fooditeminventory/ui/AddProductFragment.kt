@@ -26,6 +26,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.fooditeminventory.api.Nutriments
 import com.example.fooditeminventory.db.AppDatabase
 import com.example.fooditeminventory.db.ProductEntity
+import com.example.fooditeminventory.ui.gallery.AutoSlidingCarousel
 import com.example.fooditeminventory.ui.theme.FoodItemInventoryTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -127,10 +128,10 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
             var productName by remember { mutableStateOf(entity.name) }
             var productBrand by remember { mutableStateOf(entity.brand) }
             var productIngredients by remember { mutableStateOf(entity.ingredients) }
-            var productImageUrl by remember { mutableStateOf(if (entity.images.isNotEmpty()) entity.images[0] else "") }
             var productQuantity by remember { mutableStateOf(entity.quantity) }
             var productNutriments by remember { mutableStateOf(entity.nutriments) }
             var productAllergens by remember { mutableStateOf(entity.allergens) }
+            val images = remember { entity.images }
 
             when (selectedTabIndex) {
                 0 -> ProductDetails(
@@ -140,32 +141,32 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                     onProductBrandChange = { productBrand = it },
                     productIngredients = productIngredients,
                     onProductIngredientsChange = { productIngredients = it },
-                    productImageUrl = productImageUrl,
+                    images = images,
                     productQuantity = productQuantity,
-                    onProductQuantityChange = { productQuantity = it },
-                    saveProduct = {
-                        coroutineScope.launch(Dispatchers.IO) {
-                            if (args.productUuid.isNotEmpty()) {
-                                // Update existing product
-                                val updatedProduct = entity.copy(
-                                    name = productName,
-                                    brand = productBrand,
-                                    ingredients = productIngredients,
-                                    images = listOfNotNull(if (productImageUrl.isNotEmpty()) productImageUrl else null),
-                                    quantity = productQuantity,
-                                    nutriments = productNutriments,
-                                    allergens = productAllergens
-                                )
-                                db.productDao().insert(updatedProduct)
-                            }
+                    onProductQuantityChange = { productQuantity = it }
+                ) {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        if (args.productUuid.isNotEmpty()) {
+                            // Update existing product
+                            val updatedProduct = entity.copy(
+                                name = productName,
+                                brand = productBrand,
+                                ingredients = productIngredients,
+                                images = images,
+                                quantity = productQuantity,
+                                nutriments = productNutriments,
+                                allergens = productAllergens
+                            )
+                            db.productDao().insert(updatedProduct)
+                        }
 
-                            launch(Dispatchers.Main) {
-                                Toast.makeText(context, "Product saved!", Toast.LENGTH_SHORT).show()
-                                navController.navigate(AddProductFragmentDirections.actionAddProductFragmentToHomeFragment())
-                            }
+                        launch(Dispatchers.Main) {
+                            Toast.makeText(context, "Product saved!", Toast.LENGTH_SHORT).show()
+                            navController.navigate(AddProductFragmentDirections.actionAddProductFragmentToHomeFragment())
                         }
                     }
-                )
+                }
+
                 1 -> NutritionalInfo(nutriments = productNutriments, servingSize = entity.serving_size)
             }
         }
@@ -181,7 +182,7 @@ fun ProductDetails(
     onProductBrandChange: (String) -> Unit,
     productIngredients: String,
     onProductIngredientsChange: (String) -> Unit,
-    productImageUrl: String,
+    images: List<String>,
     productQuantity: Int,
     onProductQuantityChange: (Int) -> Unit,
     saveProduct: () -> Unit
@@ -193,13 +194,18 @@ fun ProductDetails(
     ) {
         item {
             Spacer(modifier = Modifier.height(8.dp))
-            if (productImageUrl.isNotEmpty()) {
-                Image(
-                    painter = rememberAsyncImagePainter(productImageUrl),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
+            if (images.isNotEmpty()) {
+                AutoSlidingCarousel(
+                    itemsCount = images.size,
+                    itemContent = { index ->
+                        Image(
+                            painter = rememberAsyncImagePainter(images[index]),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                        )
+                    }
                 )
             }
             TextField(

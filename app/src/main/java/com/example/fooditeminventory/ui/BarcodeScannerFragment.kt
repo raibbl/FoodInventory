@@ -112,6 +112,7 @@ class BarcodeScannerFragment : Fragment() {
                             fetchProductInfo(barcodeValue) { product ->
                                 isLoading = false // Set isLoading back to false after processing
                                 product?.let {
+                                    println(product)
                                     // Create a new ProductEntity
                                     val productEntity = ProductEntity(
                                         name = it.product_name,
@@ -127,7 +128,10 @@ class BarcodeScannerFragment : Fragment() {
                                         quantity = 1,
                                         nutriments = it.nutriments,
                                         allergens = it.allergens,
-                                        serving_size = it.serving_size
+                                        product_quantity = it.product_quantity,
+                                        product_quantity_unit = it.product_quantity_unit,
+                                        serving_size = it.serving_size,
+                                        quantityAndUnit=it.quantity
                                     )
                                     coroutineScope.launch(Dispatchers.IO) {
                                         val uuid = productEntity.uuid

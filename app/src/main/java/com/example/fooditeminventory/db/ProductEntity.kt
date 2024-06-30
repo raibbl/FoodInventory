@@ -17,5 +17,8 @@ data class ProductEntity(
     val allergens:String?,
     val images: List<String>,
     var quantity:Int,
+    var product_quantity:String?,
+    var product_quantity_unit:String?,
+    var quantityAndUnit:String?,
     val serving_size: String?,
 )

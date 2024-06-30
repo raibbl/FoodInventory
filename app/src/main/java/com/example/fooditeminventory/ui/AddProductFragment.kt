@@ -167,7 +167,7 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                     }
                 }
 
-                1 -> NutritionalInfo(nutriments = productNutriments, servingSize = entity.serving_size)
+                1 -> NutritionalInfo(nutriments = productNutriments, servingSize = entity.serving_size,quantityAndUnit=entity.quantityAndUnit)
             }
         }
     }
@@ -254,22 +254,29 @@ fun ProductDetails(
 }
 
 @Composable
-fun NutritionalInfo(nutriments: Nutriments?,servingSize : String?) {
+fun NutritionalInfo(nutriments: Nutriments?, servingSize: String?,quantityAndUnit: String?) {
     if (nutriments != null) {
         Column(modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)) {
             Text(text = "Nutritional Information", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
             Spacer(modifier = Modifier.height(8.dp))
+            quantityAndUnit?.let { Text(text = "Total Quantity: ${quantityAndUnit}", color = MaterialTheme.colorScheme.onSurface) }
             servingSize?.let { Text(text = "Serving Size: $it", color = MaterialTheme.colorScheme.onSurface) }
-            nutriments.energy?.let { Text(text = "Energy: $it", color = MaterialTheme.colorScheme.onSurface) }
-            nutriments.fat?.let { Text(text = "Fat: $it", color = MaterialTheme.colorScheme.onSurface) }
-            nutriments.saturated_fat?.let { Text(text = "Saturated Fat: $it", color = MaterialTheme.colorScheme.onSurface) }
-            nutriments.carbohydrates?.let { Text(text = "Carbohydrates: $it", color = MaterialTheme.colorScheme.onSurface) }
-            nutriments.sugars?.let { Text(text = "Sugars: $it", color = MaterialTheme.colorScheme.onSurface) }
-            nutriments.proteins?.let { Text(text = "Proteins: $it", color = MaterialTheme.colorScheme.onSurface) }
-            nutriments.salt?.let { Text(text = "Salt: $it", color = MaterialTheme.colorScheme.onSurface) }
-            nutriments.fiber?.let { Text(text = "Fiber: $it", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.energy?.let { Text(text = "Energy PerServing: ${it} ${nutriments.energy_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.fat?.let { Text(text = "Fat: ${it} ${nutriments.fat_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.saturated_fat?.let { Text(text = "Saturated Fat: ${it} ${nutriments.saturated_fat_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.carbohydrates?.let { Text(text = "Carbohydrates: ${it} ${nutriments.carbohydrates_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.sugars?.let { Text(text = "Sugars: ${it} ${nutriments.sugars_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.proteins?.let { Text(text = "Proteins: ${it} ${nutriments.proteins_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.salt?.let { Text(text = "Salt: ${it} ${nutriments.salt_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.fiber?.let { Text(text = "Fiber: ${it} ${nutriments.fiber_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.calcium?.let { Text(text = "Calcium: ${it} ${nutriments.calcium_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.iodine?.let { Text(text = "Iodine: ${it} ${nutriments.iodine_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.vitamin_b12?.let { Text(text = "Vitamin B12: ${it} ${nutriments.vitamin_b12_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.vitamin_b2?.let { Text(text = "Vitamin B2: ${it} ${nutriments.vitamin_b2_unit}", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.vitamin_d?.let { Text(text = "Vitamin D: ${it} ${nutriments.vitamin_d_unit}", color = MaterialTheme.colorScheme.onSurface) }
         }
     }
 }
+

@@ -31,20 +31,20 @@ import kotlinx.coroutines.delay
 @Composable
 fun AutoSlidingCarousel(
     modifier: Modifier = Modifier,
-    autoSlideDuration: Long = 3000L,
+   // autoSlideDuration: Long = 3000L,
     itemsCount: Int,
     itemContent: @Composable (index: Int) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { itemsCount }, initialPage = 0)
-    val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
+   // val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
 
-    LaunchedEffect(isDragged) {
-        if (!isDragged) {
-            delay(autoSlideDuration)
-            val nextPage = (pagerState.currentPage + 1) % itemsCount
-            pagerState.animateScrollToPage(nextPage)
-        }
-    }
+//    LaunchedEffect(isDragged) {
+//        if (!isDragged) {
+//            delay(autoSlideDuration)
+//            val nextPage = (pagerState.currentPage + 1) % itemsCount
+//            pagerState.animateScrollToPage(nextPage)
+//        }
+//    }
 
     Box(
         modifier = modifier.fillMaxWidth(),

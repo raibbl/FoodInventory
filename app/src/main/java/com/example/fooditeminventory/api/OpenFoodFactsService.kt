@@ -3,7 +3,7 @@ package com.example.fooditeminventory.api
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
-
+import com.google.gson.annotations.SerializedName
 data class ProductResponse(
     val code: String,
     val product: Product
@@ -69,7 +69,11 @@ data class Nutriments(
     val vitamin_b2: Double?,
     val vitamin_b2_unit: String?,
     val vitamin_d: Double?,
-    val vitamin_d_unit: String?
+    val vitamin_d_unit: String?,
+    @SerializedName("energy-kcal_serving")
+    val energyKcalServing: Double?,
+    @SerializedName("energy-kcal_unit")
+    val energyKcalUnit: String?
 )
 
 

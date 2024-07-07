@@ -263,6 +263,7 @@ fun NutritionalInfo(nutriments: Nutriments?, servingSize: String?,quantityAndUni
             Spacer(modifier = Modifier.height(8.dp))
             quantityAndUnit?.let { Text(text = "Total Quantity: ${quantityAndUnit}", color = MaterialTheme.colorScheme.onSurface) }
             servingSize?.let { Text(text = "Serving Size: $it", color = MaterialTheme.colorScheme.onSurface) }
+            nutriments.energyKcalServing?.let{ Text(text = "Calories PerServing: ${it} ${nutriments.energyKcalUnit}", color = MaterialTheme.colorScheme.onSurface) }
             nutriments.energy?.let { Text(text = "Energy PerServing: ${it} ${nutriments.energy_unit}", color = MaterialTheme.colorScheme.onSurface) }
             nutriments.fat?.let { Text(text = "Fat: ${it} ${nutriments.fat_unit}", color = MaterialTheme.colorScheme.onSurface) }
             nutriments.saturated_fat?.let { Text(text = "Saturated Fat: ${it} ${nutriments.saturated_fat_unit}", color = MaterialTheme.colorScheme.onSurface) }

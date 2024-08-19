@@ -100,37 +100,50 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
     val db = AppDatabase.getDatabase(context)
     val coroutineScope = rememberCoroutineScope()
     var productEntity by remember { mutableStateOf<ProductEntity?>(null) }
-
+    var loading by remember { mutableStateOf(true) }  // Track loading state
     LaunchedEffect(args.productUuid) {
         if (args.productUuid.isNotEmpty()) {
             coroutineScope.launch(Dispatchers.IO) {
                 productEntity = db.productDao().getProductByUuid(args.productUuid)
+                loading = false  // Data loading finished
             }
+        } else {
+            loading = false  // No product UUID means no loading required
         }
     }
 
     var selectedTabIndex by remember { mutableStateOf(0) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(15.dp)
-    ) {
-        TabRow(selectedTabIndex = selectedTabIndex) {
-            Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }) {
-                Text("Details")
-            }
-            if(productEntity?.nutriments != null){
-                Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }) {
-                    Text("Nutritional Info")
+    if (loading) {
+        // Show a loading indicator while data is being loaded
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(15.dp)
+        ) {
+            TabRow(selectedTabIndex = selectedTabIndex) {
+                Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }) {
+                    Text("Details")
+                }
+                if (productEntity?.nutriments != null) {
+                    Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }) {
+                        Text("Nutritional Info")
+                    }
                 }
             }
-        }
 
             var productName by remember { mutableStateOf(productEntity?.name ?: "") }
-            var productBrand by remember { mutableStateOf(productEntity?.brand ?:"") }
-            var productIngredients by remember { mutableStateOf(productEntity?.ingredients?:"") }
-            var productQuantity by remember { mutableStateOf(productEntity?.quantity?:1) }
+            var productBrand by remember { mutableStateOf(productEntity?.brand ?: "") }
+            var productIngredients by remember { mutableStateOf(productEntity?.ingredients ?: "") }
+            var productQuantity by remember { mutableStateOf(productEntity?.quantity ?: 1) }
             val productNutriments by remember { mutableStateOf(productEntity?.nutriments) }
             val productAllergens by remember { mutableStateOf(productEntity?.allergens) }
             val images = remember { productEntity?.images ?: listOf() }
@@ -183,6 +196,7 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
             }
         }
     }
+}
 
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -30,6 +30,7 @@ import com.example.fooditeminventory.ui.gallery.AutoSlidingCarousel
 import com.example.fooditeminventory.ui.theme.FoodItemInventoryTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class AddProductFragment : Fragment() {
 
@@ -160,22 +161,26 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                     productQuantity = productQuantity,
                     onProductQuantityChange = { productQuantity = it }
                 ) {
-                    coroutineScope.launch(Dispatchers.IO) {
-                        if (args.productUuid.isNotEmpty()) {
-                            // Update existing product
-                            val updatedProduct = productEntity?.copy(
-                                name = productName,
-                                brand = productBrand,
-                                ingredients = productIngredients,
-                                images = images,
-                                quantity = productQuantity,
-                                nutriments = productNutriments,
-                                allergens = productAllergens
-                            )
-                            if (updatedProduct != null) {
-                                db.productDao().insert(updatedProduct)
-                            }
-                        }
+                    coroutineScope.launch(Dispatchers.IO) {    val productToSave = ProductEntity(
+                        uuid = productEntity?.uuid ?: UUID.randomUUID().toString(),  // Use existing UUID or generate a new one for a new product
+                        barcode = productEntity?.barcode ?: "",  // If you have a barcode, use it; otherwise, leave as empty or handle accordingly
+                        name = productName,
+                        brand = productBrand,
+                        ingredients = productIngredients,
+                        nutriments = productNutriments,
+                        allergens = productAllergens,
+                        images = images,
+                        quantity = productQuantity,
+                        product_quantity = productEntity?.product_quantity,  // Use the existing value or null
+                        product_quantity_unit = productEntity?.product_quantity_unit,  // Use the existing value or null
+                        quantityAndUnit = productEntity?.quantityAndUnit,  // Use the existing value or null
+                        serving_size = productEntity?.serving_size  // Use the existing value or null
+                    )
+
+
+
+
+                        db.productDao().insert(productToSave)
 
                         launch(Dispatchers.Main) {
                             Toast.makeText(context, "Product saved!", Toast.LENGTH_SHORT).show()

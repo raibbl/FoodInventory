@@ -120,18 +120,20 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
             Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }) {
                 Text("Details")
             }
-            Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }) {
-                Text("Nutritional Info")
+            if(productEntity?.nutriments != null){
+                Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }) {
+                    Text("Nutritional Info")
+                }
             }
         }
-        productEntity?.let { entity ->
-            var productName by remember { mutableStateOf(entity.name) }
-            var productBrand by remember { mutableStateOf(entity.brand) }
-            var productIngredients by remember { mutableStateOf(entity.ingredients) }
-            var productQuantity by remember { mutableStateOf(entity.quantity) }
-            var productNutriments by remember { mutableStateOf(entity.nutriments) }
-            var productAllergens by remember { mutableStateOf(entity.allergens) }
-            val images = remember { entity.images }
+
+            var productName by remember { mutableStateOf(productEntity?.name ?: "") }
+            var productBrand by remember { mutableStateOf(productEntity?.brand ?:"") }
+            var productIngredients by remember { mutableStateOf(productEntity?.ingredients?:"") }
+            var productQuantity by remember { mutableStateOf(productEntity?.quantity?:1) }
+            val productNutriments by remember { mutableStateOf(productEntity?.nutriments) }
+            val productAllergens by remember { mutableStateOf(productEntity?.allergens) }
+            val images = remember { productEntity?.images ?: listOf() }
 
             when (selectedTabIndex) {
                 0 -> ProductDetails(
@@ -148,7 +150,7 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                     coroutineScope.launch(Dispatchers.IO) {
                         if (args.productUuid.isNotEmpty()) {
                             // Update existing product
-                            val updatedProduct = entity.copy(
+                            val updatedProduct = productEntity?.copy(
                                 name = productName,
                                 brand = productBrand,
                                 ingredients = productIngredients,
@@ -157,7 +159,9 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                                 nutriments = productNutriments,
                                 allergens = productAllergens
                             )
-                            db.productDao().insert(updatedProduct)
+                            if (updatedProduct != null) {
+                                db.productDao().insert(updatedProduct)
+                            }
                         }
 
                         launch(Dispatchers.Main) {
@@ -167,11 +171,19 @@ fun AddProductScreen(navController: NavController, args: AddProductFragmentArgs)
                     }
                 }
 
-                1 -> NutritionalInfo(nutriments = productNutriments, servingSize = entity.serving_size,quantityAndUnit=entity.quantityAndUnit)
+                1 -> {
+                    if (productNutriments != null) {
+                        NutritionalInfo(
+                            nutriments = productNutriments,
+                            servingSize = productEntity?.serving_size,
+                            quantityAndUnit = productEntity?.quantityAndUnit
+                        )
+                    }
+                }
             }
         }
     }
-}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

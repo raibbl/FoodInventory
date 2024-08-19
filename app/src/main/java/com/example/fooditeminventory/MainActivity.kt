@@ -1,5 +1,6 @@
 package com.example.fooditeminventory
 
+import SimpleOnboardingScreen
 import android.content.ContentValues.TAG
 import android.os.Bundle
 import android.util.Log
@@ -8,8 +9,10 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
+import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupActionBarWithNavController
+import com.example.fooditeminventory.ui.theme.FoodItemInventoryTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -42,9 +45,32 @@ class MainActivity : AppCompatActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setSupportActionBar(findViewById(R.id.toolbar))
-        setupActionBarWithNavController(findNavController(R.id.nav_host_fragment_content_main))
+
+        val sharedPreferences = getSharedPreferences("onboarding_prefs", MODE_PRIVATE)
+        val hasCompletedOnboarding = sharedPreferences.getBoolean("hasCompletedOnboarding", false)
+
+        if (!hasCompletedOnboarding) {
+            setContentView(ComposeView(this).apply {
+                setContent {
+                    FoodItemInventoryTheme {
+                        SimpleOnboardingScreen(onFinished = {
+                            sharedPreferences.edit().putBoolean("hasCompletedOnboarding", true).apply()
+                            restartMainActivity()
+                        })
+                    }
+                }
+            })
+        } else {
+            // Regular setup after onboarding is completed
+            setContentView(R.layout.activity_main)
+            setSupportActionBar(findViewById(R.id.toolbar))
+            setupActionBarWithNavController(findNavController(R.id.nav_host_fragment_content_main))
+        }
+    }
+
+    private fun restartMainActivity() {
+        finish()
+        startActivity(intent)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
